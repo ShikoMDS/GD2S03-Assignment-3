@@ -31,7 +31,6 @@ public class AudioManager : MonoBehaviour
 
     private void LoadSettings()
     {
-        // Load volume and mute settings from PlayerPrefs
         musicSource.volume = PlayerPrefs.GetFloat("MusicVolume", 0.5f);
         sfxSource.volume = PlayerPrefs.GetFloat("SFXVolume", 0.5f);
         musicSource.mute = PlayerPrefs.GetInt("MusicMuted", 0) == 1;
@@ -77,15 +76,13 @@ public class AudioManager : MonoBehaviour
 
     public void ToggleMusicMute(bool isSoundOn)
     {
-        bool isMuted = !isSoundOn; // Invert to make checked = sound on
-        musicSource.mute = isMuted;
-        PlayerPrefs.SetInt("MusicMuted", isMuted ? 1 : 0);
+        musicSource.mute = !isSoundOn; // If isSoundOn is true, unmute; if false, mute
+        PlayerPrefs.SetInt("MusicMuted", musicSource.mute ? 1 : 0);
     }
 
     public void ToggleSFXMute(bool isSoundOn)
     {
-        bool isMuted = !isSoundOn; // Invert to make checked = sound on
-        sfxSource.mute = isMuted;
-        PlayerPrefs.SetInt("SFXMuted", isMuted ? 1 : 0);
+        sfxSource.mute = !isSoundOn; // If isSoundOn is true, unmute; if false, mute
+        PlayerPrefs.SetInt("SFXMuted", sfxSource.mute ? 1 : 0);
     }
 }

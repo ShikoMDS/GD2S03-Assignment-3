@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 public class MenuController : MonoBehaviour
@@ -11,9 +10,15 @@ public class MenuController : MonoBehaviour
     public GameObject instructionsPanel;
     public GameObject optionsPanel;
 
+    private AudioManager audioManager;
+
     private void Start()
     {
         ShowMainMenu();
+        audioManager = FindObjectOfType<AudioManager>();
+
+        // Start playing the menu music
+        audioManager.PlayMenuMusic();
     }
 
     // Main Menu Button Functions
