@@ -6,10 +6,10 @@ public class AudioManager : MonoBehaviour
 {
     public AudioClip menuMusic;
     public AudioClip gameMusic;
-    public AudioClip clickSound; // Assign the click sound here
+    public AudioClip clickSound;
 
     public AudioSource musicSource;
-    public AudioSource sfxSource; // Separate AudioSource for SFX
+    public AudioSource sfxSource;
 
     private static AudioManager instance;
 
@@ -26,13 +26,12 @@ public class AudioManager : MonoBehaviour
             return;
         }
 
-        // Load and set initial settings
         LoadSettings();
     }
 
     private void LoadSettings()
     {
-        // Set music and SFX volume from PlayerPrefs if available
+        // Load volume and mute settings from PlayerPrefs
         musicSource.volume = PlayerPrefs.GetFloat("MusicVolume", 0.5f);
         sfxSource.volume = PlayerPrefs.GetFloat("SFXVolume", 0.5f);
         musicSource.mute = PlayerPrefs.GetInt("MusicMuted", 0) == 1;
@@ -41,16 +40,22 @@ public class AudioManager : MonoBehaviour
 
     public void PlayMenuMusic()
     {
-        musicSource.clip = menuMusic;
-        musicSource.loop = true;
-        musicSource.Play();
+        if (musicSource.clip != menuMusic)
+        {
+            musicSource.clip = menuMusic;
+            musicSource.loop = true;
+            musicSource.Play();
+        }
     }
 
     public void PlayGameMusic()
     {
-        musicSource.clip = gameMusic;
-        musicSource.loop = true;
-        musicSource.Play();
+        if (musicSource.clip != gameMusic)
+        {
+            musicSource.clip = gameMusic;
+            musicSource.loop = true;
+            musicSource.Play();
+        }
     }
 
     public void PlayClickSound()
@@ -70,14 +75,16 @@ public class AudioManager : MonoBehaviour
         PlayerPrefs.SetFloat("SFXVolume", volume);
     }
 
-    public void ToggleMusicMute(bool isMuted)
+    public void ToggleMusicMute(bool isSoundOn)
     {
+        bool isMuted = !isSoundOn; // Invert to make checked = sound on
         musicSource.mute = isMuted;
         PlayerPrefs.SetInt("MusicMuted", isMuted ? 1 : 0);
     }
 
-    public void ToggleSFXMute(bool isMuted)
+    public void ToggleSFXMute(bool isSoundOn)
     {
+        bool isMuted = !isSoundOn; // Invert to make checked = sound on
         sfxSource.mute = isMuted;
         PlayerPrefs.SetInt("SFXMuted", isMuted ? 1 : 0);
     }

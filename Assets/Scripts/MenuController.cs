@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class MenuController : MonoBehaviour
 {
@@ -10,23 +11,15 @@ public class MenuController : MonoBehaviour
     public GameObject instructionsPanel;
     public GameObject optionsPanel;
 
-    [Header("Volume Controls")]
-    public Slider musicSlider;
-    public Slider sfxSlider;
-    public Toggle musicMuteToggle;
-    public Toggle sfxMuteToggle;
-
     private void Start()
     {
         ShowMainMenu();
-        LoadVolumeSettings();
     }
 
     // Main Menu Button Functions
     public void PlayGame()
     {
-        // Load the game scene here
-        UnityEngine.SceneManagement.SceneManager.LoadScene("Stage1Scene");
+        SceneManager.LoadScene("Game");
     }
 
     public void ShowInstructions()
@@ -47,38 +40,5 @@ public class MenuController : MonoBehaviour
         mainMenuPanel.SetActive(true);
         instructionsPanel.SetActive(false);
         optionsPanel.SetActive(false);
-    }
-
-    // Volume and Mute Control Functions
-    public void SetMusicVolume(float volume)
-    {
-        PlayerPrefs.SetFloat("MusicVolume", volume);
-        // Add logic to control actual audio source volume here
-    }
-
-    public void SetSFXVolume(float volume)
-    {
-        PlayerPrefs.SetFloat("SFXVolume", volume);
-        // Add logic to control actual SFX volume here
-    }
-
-    public void ToggleMusicMute(bool isMuted)
-    {
-        PlayerPrefs.SetInt("MusicMuted", isMuted ? 1 : 0);
-        // Add logic to mute/unmute music audio source
-    }
-
-    public void ToggleSFXMute(bool isMuted)
-    {
-        PlayerPrefs.SetInt("SFXMuted", isMuted ? 1 : 0);
-        // Add logic to mute/unmute SFX audio source
-    }
-
-    private void LoadVolumeSettings()
-    {
-        musicSlider.value = PlayerPrefs.GetFloat("MusicVolume", 1f);
-        sfxSlider.value = PlayerPrefs.GetFloat("SFXVolume", 1f);
-        musicMuteToggle.isOn = PlayerPrefs.GetInt("MusicMuted", 0) == 1;
-        sfxMuteToggle.isOn = PlayerPrefs.GetInt("SFXMuted", 0) == 1;
     }
 }

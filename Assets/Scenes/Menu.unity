@@ -3958,10 +3958,6 @@ MonoBehaviour:
   mainMenuPanel: {fileID: 748199442}
   instructionsPanel: {fileID: 1899314782}
   optionsPanel: {fileID: 1837783859}
-  musicSlider: {fileID: 1112013017}
-  sfxSlider: {fileID: 1748241570}
-  musicMuteToggle: {fileID: 61790823}
-  sfxMuteToggle: {fileID: 985565069}
 --- !u!4 &1867003436
 Transform:
   m_ObjectHideFlags: 0
@@ -4328,7 +4324,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: a9ebeba4ba2bba344ab27e7643067d47, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
