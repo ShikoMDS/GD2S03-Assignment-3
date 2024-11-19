@@ -11,6 +11,22 @@ public class GameManager : MonoBehaviour
 
     private int currentStage = 0;
 
+    public AudioSource gameMusicSource;
+    public AudioSource gameSfxSource;
+
+    private void Start()
+    {
+        if (AudioManager.instance != null)
+        {
+            AudioManager.instance.SetAudioSources(gameMusicSource, gameSfxSource);
+            AudioManager.instance.PlayGameMusic(); // Start game music
+        }
+        else
+        {
+            Debug.LogError("AudioManager instance is missing!");
+        }
+    }
+
     private void Awake()
     {
         if (instance == null)

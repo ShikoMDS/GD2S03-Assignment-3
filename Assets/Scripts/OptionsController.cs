@@ -11,16 +11,16 @@ public class OptionsController : MonoBehaviour
     public Toggle sfxMuteToggle;
 
     private AudioManager audioManager;
-    private float previousMusicVolume = 0.5f; // Default previous volume for Music
-    private float previousSFXVolume = 0.5f;   // Default previous volume for SFX
+    private float previousMusicVolume = 0.25f; // Default previous volume for Music
+    private float previousSFXVolume = 1.0f;   // Default previous volume for SFX
 
     private void Start()
     {
         audioManager = FindObjectOfType<AudioManager>();
 
         // Load saved settings and initialize toggle states based on slider values
-        previousMusicVolume = PlayerPrefs.GetFloat("MusicVolume", 0.5f);
-        previousSFXVolume = PlayerPrefs.GetFloat("SFXVolume", 0.5f);
+        previousMusicVolume = PlayerPrefs.GetFloat("MusicVolume", 0.25f);
+        previousSFXVolume = PlayerPrefs.GetFloat("SFXVolume", 1.0f);
         musicSlider.value = previousMusicVolume;
         sfxSlider.value = previousSFXVolume;
         musicMuteToggle.isOn = previousMusicVolume > 0;
