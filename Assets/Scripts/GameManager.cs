@@ -1,12 +1,14 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
     public int playerLives;
     public int maxLives = 3;
     public HealthUIManager healthUIManager; // Reference to the UI Health Manager
+    public AdManager adManager; // Reference to the AdManager
 
     public Transform[] respawnPoints; // Array of respawn points for each stage
     private int currentStage = 0;
@@ -149,10 +151,58 @@ public class GameManager : MonoBehaviour
         else
         {
             Debug.Log("Player has lost!");
+
             if (loseScreen != null) loseScreen.SetActive(true);
+
+            AdManager adManager = FindObjectOfType<AdManager>();
+            if (adManager != null && playerLives <= 0 && !adManager.RewardAdUsed())
+            {
+                Button continueButton = loseScreen.GetComponentInChildren<Button>();
+                if (continueButton != null)
+                {
+                    continueButton.gameObject.SetActive(true); // Show the Continue button
+                }
+            }
         }
 
         Time.timeScale = 0f; // Pause the game
+    }
+
+    public void OnRewardAdButtonClicked()
+    {
+        if (adManager != null && !adManager.RewardAdUsed())
+        {
+            adManager.ShowRewardedAd();
+        }
+        else
+        {
+            Debug.LogWarning("Rewarded ad is not available or has already been used.");
+        }
+    }
+
+
+    public void GiveExtraLife()
+    {
+        playerLives = 1; // Grant 1 life
+        Debug.Log("Player granted an extra life!");
+
+        // Respawn the player
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null && respawnPoints.Length > currentStage)
+        {
+            player.transform.position = respawnPoints[currentStage].position;
+            Debug.Log("Player respawned with an extra life.");
+        }
+        else
+        {
+            Debug.LogError("Player or respawn point not found.");
+        }
+
+        // Update health UI
+        if (healthUIManager != null)
+        {
+            healthUIManager.UpdateHealth(playerLives);
+        }
     }
 
     public void RestartGame()
