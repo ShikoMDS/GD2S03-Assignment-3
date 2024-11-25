@@ -35,15 +35,27 @@ public class CameraController : MonoBehaviour
     private IEnumerator PanToPosition(Vector3 targetPosition)
     {
         Vector3 startPosition = transform.position;
+
+        // Preserve the camera's Z position
+        targetPosition.z = -10;
+
         float elapsed = 0f;
 
         while (elapsed < 1f)
         {
             elapsed += Time.deltaTime * panSpeed;
-            transform.position = Vector3.Lerp(startPosition, targetPosition, elapsed);
+
+            // Interpolate position and maintain z = -10
+            transform.position = Vector3.Lerp(
+                startPosition,
+                new Vector3(targetPosition.x, targetPosition.y, -10), // Ensure Z is always -10
+                elapsed
+            );
+
             yield return null;
         }
 
-        transform.position = targetPosition;
+        // Snap to the final position to ensure accuracy
+        transform.position = new Vector3(targetPosition.x, targetPosition.y, -10);
     }
 }

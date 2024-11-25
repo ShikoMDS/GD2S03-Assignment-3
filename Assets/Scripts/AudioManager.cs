@@ -41,7 +41,7 @@ public class AudioManager : MonoBehaviour
     {
         if (musicSource.clip != menuMusic)
         {
-            musicSource.Stop(); // Stop the current music (e.g., menu music)
+            StopAllAudio();
             musicSource.clip = menuMusic;
             musicSource.loop = true;
             musicSource.Play();
@@ -54,7 +54,7 @@ public class AudioManager : MonoBehaviour
 
         if (musicSource.clip != gameMusic)
         {
-            musicSource.Stop(); // Stop the current music (e.g., menu music)
+            StopAllAudio();
             musicSource.clip = gameMusic;
             musicSource.loop = true;
             musicSource.Play();
@@ -124,5 +124,19 @@ public class AudioManager : MonoBehaviour
         sfxSource.mute = isSfxMuted;
 
         Debug.Log($"Audio sources updated: MusicVolume={musicVolume}, SFXVolume={sfxVolume}, MusicMuted={isMusicMuted}, SFXMuted={isSfxMuted}");
+    }
+    public void StopAllAudio()
+    {
+        if (musicSource != null)
+        {
+            musicSource.Stop();
+        }
+
+        if (sfxSource != null)
+        {
+            sfxSource.Stop();
+        }
+
+        Debug.Log("All audio stopped.");
     }
 }

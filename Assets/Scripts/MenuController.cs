@@ -24,13 +24,15 @@ public class MenuController : MonoBehaviour
     // Main Menu Button Functions
     public void PlayGame()
     {
-        Debug.Log("Initializing audio sources for the game...");
-        AudioManager.instance.InitializeAudioSources(); // Ensure audio sources are ready
-        AudioManager.instance.PlayGameMusic(); // Start playing game music
+        Debug.Log("Initializing game audio sources...");
 
-        // Load the Game scene
+        // Ensure audio sources are reinitialized for the game
         SceneManager.LoadScene("Game");
+
+        // Reinitialize game audio sources after loading the scene
+        GameManager.instance.StartCoroutine(GameManager.instance.ReinitializeGameAudio());
     }
+
 
     public void ShowInstructions()
     {
