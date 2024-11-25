@@ -81,6 +81,8 @@ public class GameManager : MonoBehaviour
 
     public void RespawnPlayer(GameObject player)
     {
+        if (loseScreen != null) loseScreen.SetActive(false);
+
         playerLives--;
 
         if (playerLives <= 0)
@@ -115,9 +117,18 @@ public class GameManager : MonoBehaviour
         int savedHighestStage = PlayerPrefs.GetInt("HighestStage", 0); // Default to 0 if no data exists
         if (currentStage + 1 > savedHighestStage)
         {
-            PlayerPrefs.SetInt("HighestStage", currentStage + 1);
-            PlayerPrefs.Save();
-            Debug.Log($"New highest stage achieved: {currentStage + 1}");
+            if (currentStage + 1 >= 10)
+            {
+                PlayerPrefs.SetInt("HighestStage", 10);
+                PlayerPrefs.Save();
+                Debug.Log($"New highest stage achieved: 10");
+            }
+            else
+            {
+                PlayerPrefs.SetInt("HighestStage", currentStage + 1);
+                PlayerPrefs.Save();
+                Debug.Log($"New highest stage achieved: {currentStage + 1}");
+            }
         }
 
         if (currentStage >= respawnPoints.Length)
@@ -203,15 +214,6 @@ public class GameManager : MonoBehaviour
         {
             healthUIManager.UpdateHealth(playerLives);
         }
-    }
-
-    public void RestartGame()
-    {
-        Time.timeScale = 1f; // Resume the game
-
-        // Reset lives and stages
-        playerLives = maxLives;
-        currentStage = 0;
     }
 
     public void ReturnToMenu()
