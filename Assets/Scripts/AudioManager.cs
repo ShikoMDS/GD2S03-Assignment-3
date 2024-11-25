@@ -108,14 +108,14 @@ public class AudioManager : MonoBehaviour
 
     public void SetAudioSources(AudioSource newMusicSource, AudioSource newSfxSource)
     {
-        musicSource = newMusicSource;
-        sfxSource = newSfxSource;
-
         // Apply saved settings
         float musicVolume = PlayerPrefs.GetFloat("MusicVolume", 0.5f);
         float sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 0.5f);
         bool isMusicMuted = PlayerPrefs.GetInt("MusicMuted", 0) == 1;
         bool isSfxMuted = PlayerPrefs.GetInt("SFXMuted", 0) == 1;
+        
+        musicSource = newMusicSource;
+        sfxSource = newSfxSource;
 
         musicSource.volume = musicVolume;
         sfxSource.volume = sfxVolume;

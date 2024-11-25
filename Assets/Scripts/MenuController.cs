@@ -28,9 +28,6 @@ public class MenuController : MonoBehaviour
 
         // Ensure audio sources are reinitialized for the game
         SceneManager.LoadScene("Game");
-
-        // Reinitialize game audio sources after loading the scene
-        GameManager.instance.StartCoroutine(GameManager.instance.ReinitializeGameAudio());
     }
 
 

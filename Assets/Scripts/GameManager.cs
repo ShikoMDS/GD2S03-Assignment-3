@@ -6,7 +6,9 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance; // Singleton instance
-    public int playerLives = 3;
+    public int playerLives;
+    public int maxLives = 3;
+    public HealthUIManager healthUIManager; // Reference to the UI Health Manager
 
     public Transform[] respawnPoints; // Array of respawn points for each stage
     private int currentStage = 0;
@@ -16,28 +18,43 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        if (instance == null)
+        // Ensure only one instance of GameManager exists
+        if (instance != null && instance != this)
         {
-            instance = this;
-            DontDestroyOnLoad(gameObject);
+            Destroy(instance.gameObject); // Destroy the old instance
         }
-        else
-        {
-            Destroy(gameObject);
-            return;
-        }
+
+        instance = this; // Set this as the active instance
+        DontDestroyOnLoad(gameObject); // Persist this GameManager across scenes
     }
 
     private void Start()
     {
+        // Reset lives and initialize the health UI when the game starts
+        ResetLives();
         InitializeAudio();
+    }
+
+    public void ResetLives()
+    {
+        playerLives = maxLives; // Reset lives to maximum
+        Debug.Log($"Lives reset to {playerLives}");
+
+        // Initialize health UI
+        if (healthUIManager != null)
+        {
+            healthUIManager.InitializeHealth(maxLives);
+        }
+        else
+        {
+            Debug.LogError("HealthUIManager not assigned.");
+        }
     }
 
     private void InitializeAudio()
     {
         if (AudioManager.instance != null)
         {
-            Debug.Log("Setting audio sources and playing game music.");
             AudioManager.instance.SetAudioSources(gameMusicSource, gameSfxSource);
             AudioManager.instance.PlayGameMusic();
         }
@@ -51,14 +68,27 @@ public class GameManager : MonoBehaviour
     {
         playerLives--;
 
-        if (playerLives > 0)
+        if (playerLives <= 0)
         {
-            // Reset player position to the current stage's respawn point
+            Debug.LogError("Cannot respawn, player is out of lives.");
+            GameOver();
+            return;
+        }
+
+        if (healthUIManager != null)
+        {
+            healthUIManager.UpdateHealth(playerLives);
+        }
+
+        // Move player to respawn point
+        if (respawnPoints.Length > currentStage)
+        {
             player.transform.position = respawnPoints[currentStage].position;
+            Debug.Log($"Player respawned. Lives remaining: {playerLives}");
         }
         else
         {
-            GameOver();
+            Debug.LogError("No respawn point found for the current stage.");
         }
     }
 
@@ -66,53 +96,59 @@ public class GameManager : MonoBehaviour
     {
         currentStage++;
 
-        // Ensure currentStage doesn't exceed the respawnPoints array bounds
         if (currentStage >= respawnPoints.Length)
         {
-            Debug.LogWarning("No more stages! Current stage index exceeds respawn points.");
+            Debug.Log("Game completed! No more stages.");
+            GameOver(); // End the game
             return;
         }
 
-        // Move the camera to the next stage
-        CameraController.instance.MoveToNextStage(currentStage);
+        // Move player to the next stage's respawn point
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null)
+        {
+            player.transform.position = respawnPoints[currentStage].position;
+            CameraController.instance?.MoveToNextStage(currentStage);
+            Debug.Log($"Stage {currentStage} complete. Player moved to the next stage.");
+        }
+        else
+        {
+            Debug.LogError("Player object not found.");
+        }
     }
 
     private void GameOver()
     {
-        // Stop all audio to prevent overlapping
         if (AudioManager.instance != null)
         {
-            AudioManager.instance.StopAllAudio(); // Add this to AudioManager
+            AudioManager.instance.StopAllAudio(); // Stop all audio to prevent overlap
         }
 
-        // Load the Menu scene
-        Debug.Log("Game Over! Returning to Menu.");
+        Debug.Log("Game Over! Returning to Menu...");
         SceneManager.LoadScene("Menu");
 
-        // Reassign audio for the menu after the scene loads
+        // Reinitialize audio for the Menu after the scene loads
         StartCoroutine(ReinitializeMenuAudio());
     }
 
     private IEnumerator ReinitializeMenuAudio()
     {
-        // Wait for the new scene to load
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(0.1f); // Wait for the scene to load
 
         if (AudioManager.instance != null)
         {
-            // Locate the menu's audio sources in the new scene
             AudioSource menuMusicSource = GameObject.Find("Music")?.GetComponent<AudioSource>();
             AudioSource menuSfxSource = GameObject.Find("SFX")?.GetComponent<AudioSource>();
 
-            if (menuMusicSource == null || menuSfxSource == null)
+            if (menuMusicSource != null && menuSfxSource != null)
             {
-                Debug.LogError("Menu audio sources not found in the scene.");
-                yield break;
+                AudioManager.instance.SetAudioSources(menuMusicSource, menuSfxSource);
+                AudioManager.instance.PlayMenuMusic();
             }
-
-            // Set the audio sources for the menu
-            AudioManager.instance.SetAudioSources(menuMusicSource, menuSfxSource);
-            AudioManager.instance.PlayMenuMusic(); // Start playing the menu music
+            else
+            {
+                Debug.LogError("Menu audio sources not found.");
+            }
         }
         else
         {
@@ -122,25 +158,22 @@ public class GameManager : MonoBehaviour
 
     public IEnumerator ReinitializeGameAudio()
     {
-        // Wait for the new scene to load
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(0.1f); // Wait for the scene to load
 
         if (AudioManager.instance != null)
         {
-            // Locate game audio sources in the new scene
             AudioSource gameMusicSource = GameObject.Find("Game Music")?.GetComponent<AudioSource>();
             AudioSource gameSfxSource = GameObject.Find("Game SFX")?.GetComponent<AudioSource>();
 
-            if (gameMusicSource == null || gameSfxSource == null)
+            if (gameMusicSource != null && gameSfxSource != null)
             {
-                Debug.LogError("Game audio sources not found in the scene. Ensure GameMusic and GameSFX GameObjects exist and are properly named.");
-                yield break;
+                AudioManager.instance.SetAudioSources(gameMusicSource, gameSfxSource);
+                AudioManager.instance.PlayGameMusic();
             }
-
-            Debug.Log("Game audio sources found. Reassigning to AudioManager.");
-            // Set the audio sources for the game
-            AudioManager.instance.SetAudioSources(gameMusicSource, gameSfxSource);
-            AudioManager.instance.PlayGameMusic(); // Start playing game music
+            else
+            {
+                Debug.LogError("Game audio sources not found.");
+            }
         }
         else
         {
