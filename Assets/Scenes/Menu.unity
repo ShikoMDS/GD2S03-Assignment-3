@@ -1168,6 +1168,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce13a0df0b7d03b489e32e4056b6b68b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  menuMusic: {fileID: 8300000, guid: 9b97e34c45bbad14d9afc7176e3965c4, type: 3}
+  gameMusic: {fileID: 8300000, guid: 2370b172d07b03248afc12b2daa10c65, type: 3}
+  clickSound: {fileID: 8300000, guid: a9ebeba4ba2bba344ab27e7643067d47, type: 3}
   musicSource: {fileID: 194416436}
   sfxSource: {fileID: 1992715882}
 --- !u!4 &886724405
@@ -3900,7 +3903,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9df9a7b90a482242adfacc1b947bdfc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioManager: {fileID: 0}
   musicSlider: {fileID: 1112013017}
   sfxSlider: {fileID: 1748241570}
   musicMuteToggle: {fileID: 61790823}

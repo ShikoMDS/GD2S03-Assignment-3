@@ -1,78 +1,97 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class OptionsController : MonoBehaviour
 {
-    public AudioManager audioManager;
     public Slider musicSlider;
     public Slider sfxSlider;
     public Toggle musicMuteToggle;
     public Toggle sfxMuteToggle;
 
+    private AudioManager audioManager;
+    private float previousMusicVolume = 0.25f; // Default previous volume for Music
+    private float previousSFXVolume = 1.0f;   // Default previous volume for SFX
+
     private void Start()
     {
-        // Find AudioManager in the scene
         audioManager = FindObjectOfType<AudioManager>();
 
-        // Initialize sliders and toggles based on saved PlayerPrefs
-        musicSlider.value = PlayerPrefs.GetFloat("MusicVolume", 0.5f);
-        sfxSlider.value = PlayerPrefs.GetFloat("SFXVolume", 0.5f);
-        musicMuteToggle.isOn = PlayerPrefs.GetInt("MusicMuted", 0) == 0;
-        sfxMuteToggle.isOn = PlayerPrefs.GetInt("SFXMuted", 0) == 0;
+        // Load saved settings and initialize toggle states based on slider values
+        previousMusicVolume = PlayerPrefs.GetFloat("MusicVolume", 0.25f);
+        previousSFXVolume = PlayerPrefs.GetFloat("SFXVolume", 1.0f);
+        musicSlider.value = previousMusicVolume;
+        sfxSlider.value = previousSFXVolume;
+        musicMuteToggle.isOn = previousMusicVolume > 0;
+        sfxMuteToggle.isOn = previousSFXVolume > 0;
 
-        // Apply settings to the AudioManager
-        ApplySettings();
+        // Set initial audio settings
+        audioManager.SetMusicVolume(musicSlider.value);
+        audioManager.SetSFXVolume(sfxSlider.value);
+        audioManager.ToggleMusicMute(musicMuteToggle.isOn);
+        audioManager.ToggleSFXMute(sfxMuteToggle.isOn);
+
+        // Add listeners for sliders and toggles
+        musicSlider.onValueChanged.AddListener(OnMusicSliderChanged);
+        sfxSlider.onValueChanged.AddListener(OnSFXSliderChanged);
+        musicMuteToggle.onValueChanged.AddListener(OnMusicMuteToggleChanged);
+        sfxMuteToggle.onValueChanged.AddListener(OnSFXMuteToggleChanged);
     }
 
-    public void OnMusicSliderChanged(float value)
+    private void OnMusicSliderChanged(float value)
     {
-        PlayerPrefs.SetFloat("MusicVolume", value);
-        if (audioManager != null)
+        if (value == 0)
         {
-            audioManager.SetMusicVolume(value);
+            musicMuteToggle.isOn = false; // Sync mute toggle to "off" if slider is 0
         }
+        else
+        {
+            musicMuteToggle.isOn = true;  // Turn sound on if slider is above 0
+            previousMusicVolume = value;  // Update previous volume
+        }
+        audioManager.SetMusicVolume(value);
     }
 
-    public void OnSFXSliderChanged(float value)
+    private void OnSFXSliderChanged(float value)
     {
-        PlayerPrefs.SetFloat("SFXVolume", value);
-        if (audioManager != null)
+        if (value == 0)
         {
-            audioManager.SetSFXVolume(value);
+            sfxMuteToggle.isOn = false; // Sync mute toggle to "off" if slider is 0
         }
+        else
+        {
+            sfxMuteToggle.isOn = true;  // Turn sound on if slider is above 0
+            previousSFXVolume = value;  // Update previous volume
+        }
+        audioManager.SetSFXVolume(value);
     }
 
-    public void OnMusicMuteToggled(bool isMuted)
+    private void OnMusicMuteToggleChanged(bool isSoundOn)
     {
-        PlayerPrefs.SetInt("MusicMuted", isMuted ? 1 : 0);
-        if (audioManager != null)
+        if (isSoundOn)
         {
-            audioManager.musicSource.mute = isMuted;
+            musicSlider.value = previousMusicVolume; // Restore previous volume when unmuted
         }
+        else
+        {
+            previousMusicVolume = musicSlider.value; // Store current volume before muting
+            musicSlider.value = 0; // Set volume to 0 when muted
+        }
+        audioManager.ToggleMusicMute(isSoundOn);
     }
 
-    public void OnSFXMuteToggled(bool isMuted)
+    private void OnSFXMuteToggleChanged(bool isSoundOn)
     {
-        PlayerPrefs.SetInt("SFXMuted", isMuted ? 1 : 0);
-        if (audioManager != null)
+        if (isSoundOn)
         {
-            audioManager.sfxSource.mute = isMuted;
+            sfxSlider.value = previousSFXVolume; // Restore previous volume when unmuted
         }
-    }
-
-    private void ApplySettings()
-    {
-        float musicVolume = PlayerPrefs.GetFloat("MusicVolume", 0.5f);
-        float sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 0.5f);
-        bool musicMuted = PlayerPrefs.GetInt("MusicMuted", 0) == 1;
-        bool sfxMuted = PlayerPrefs.GetInt("SFXMuted", 0) == 1;
-
-        if (audioManager != null)
+        else
         {
-            audioManager.SetMusicVolume(musicVolume);
-            audioManager.SetSFXVolume(sfxVolume);
-            audioManager.musicSource.mute = musicMuted;
-            audioManager.sfxSource.mute = sfxMuted;
+            previousSFXVolume = sfxSlider.value; // Store current volume before muting
+            sfxSlider.value = 0; // Set volume to 0 when muted
         }
+        audioManager.ToggleSFXMute(isSoundOn);
     }
 }
