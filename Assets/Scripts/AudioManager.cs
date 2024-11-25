@@ -139,4 +139,9 @@ public class AudioManager : MonoBehaviour
 
         Debug.Log("All audio stopped.");
     }
+    public bool IsGameMusicPlaying()
+    {
+        // Check if musicSource is playing
+        return musicSource != null && musicSource.isPlaying;
+    }
 }

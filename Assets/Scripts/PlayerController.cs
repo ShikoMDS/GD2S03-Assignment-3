@@ -33,6 +33,10 @@ public class PlayerController : MonoBehaviour
         {
             rb.velocity = new Vector2(0, rb.velocity.y);
         }
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            PauseManager.instance.TogglePause();
+        }
     }
 
     // Called when the left button is pressed

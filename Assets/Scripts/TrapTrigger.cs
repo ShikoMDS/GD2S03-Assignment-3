@@ -8,8 +8,16 @@ public class TrapTrigger : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            // Reduce player's health and respawn them
-            GameManager.instance.RespawnPlayer(other.gameObject);
+            GameManager gameManager = FindObjectOfType<GameManager>();
+            if (gameManager != null)
+            {
+                GameObject player = other.gameObject;
+                gameManager.RespawnPlayer(player);
+            }
+            else
+            {
+                Debug.LogError("GameManager not found!");
+            }
         }
     }
 }

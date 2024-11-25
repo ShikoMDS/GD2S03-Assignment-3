@@ -8,7 +8,15 @@ public class StageEndTrigger : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            GameManager.instance.CompleteStage();
+            GameManager gameManager = FindObjectOfType<GameManager>();
+            if (gameManager != null)
+            {
+                gameManager.CompleteStage();
+            }
+            else
+            {
+                Debug.LogError("GameManager not found!");
+            }
         }
     }
 }

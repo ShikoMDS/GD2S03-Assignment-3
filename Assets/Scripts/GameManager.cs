@@ -1,11 +1,9 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager instance; // Singleton instance
     public int playerLives;
     public int maxLives = 3;
     public HealthUIManager healthUIManager; // Reference to the UI Health Manager
@@ -16,23 +14,35 @@ public class GameManager : MonoBehaviour
     public AudioSource gameMusicSource;
     public AudioSource gameSfxSource;
 
-    private void Awake()
-    {
-        // Ensure only one instance of GameManager exists
-        if (instance != null && instance != this)
-        {
-            Destroy(instance.gameObject); // Destroy the old instance
-        }
-
-        instance = this; // Set this as the active instance
-        DontDestroyOnLoad(gameObject); // Persist this GameManager across scenes
-    }
+    public GameObject winScreen; // Win screen UI
+    public GameObject loseScreen; // Lose screen UI
 
     private void Start()
     {
-        // Reset lives and initialize the health UI when the game starts
         ResetLives();
         InitializeAudio();
+
+        if (winScreen != null) winScreen.SetActive(false);
+        if (loseScreen != null) loseScreen.SetActive(false);
+    }
+
+    private void InitializeAudio()
+    {
+        if (AudioManager.instance != null)
+        {
+            // Assign audio sources for game music and SFX
+            AudioManager.instance.SetAudioSources(gameMusicSource, gameSfxSource);
+
+            // Play game music if not already playing
+            if (!AudioManager.instance.IsGameMusicPlaying())
+            {
+                AudioManager.instance.PlayGameMusic();
+            }
+        }
+        else
+        {
+            Debug.LogError("AudioManager instance is missing!");
+        }
     }
 
     public void ResetLives()
@@ -51,19 +61,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void InitializeAudio()
-    {
-        if (AudioManager.instance != null)
-        {
-            AudioManager.instance.SetAudioSources(gameMusicSource, gameSfxSource);
-            AudioManager.instance.PlayGameMusic();
-        }
-        else
-        {
-            Debug.LogError("AudioManager instance is missing!");
-        }
-    }
-
     public void RespawnPlayer(GameObject player)
     {
         playerLives--;
@@ -71,7 +68,7 @@ public class GameManager : MonoBehaviour
         if (playerLives <= 0)
         {
             Debug.LogError("Cannot respawn, player is out of lives.");
-            GameOver();
+            GameOver(false); // Lose condition
             return;
         }
 
@@ -99,7 +96,7 @@ public class GameManager : MonoBehaviour
         if (currentStage >= respawnPoints.Length)
         {
             Debug.Log("Game completed! No more stages.");
-            GameOver(); // End the game
+            GameOver(true); // Win condition
             return;
         }
 
@@ -117,18 +114,69 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void GameOver()
+    private void GameOver(bool hasWon)
     {
+        // Stop all audio
         if (AudioManager.instance != null)
         {
-            AudioManager.instance.StopAllAudio(); // Stop all audio to prevent overlap
+            AudioManager.instance.StopAllAudio();
         }
 
-        Debug.Log("Game Over! Returning to Menu...");
+        if (hasWon)
+        {
+            Debug.Log("Player has won!");
+            if (winScreen != null) winScreen.SetActive(true);
+        }
+        else
+        {
+            Debug.Log("Player has lost!");
+            if (loseScreen != null) loseScreen.SetActive(true);
+        }
+
+        Time.timeScale = 0f; // Pause the game
+    }
+
+    public void RestartGame()
+    {
+        Time.timeScale = 1f; // Resume the game
+
+        // Reset lives and stages
+        playerLives = maxLives;
+        currentStage = 0;
+
+        // Reload game scene
+        SceneManager.LoadScene("Game");
+        StartCoroutine(ReinitializeGameAudio());
+    }
+
+    public void ReturnToMenu()
+    {
+        Time.timeScale = 1f; // Resume the game
         SceneManager.LoadScene("Menu");
 
-        // Reinitialize audio for the Menu after the scene loads
+        // Reinitialize audio for menu
         StartCoroutine(ReinitializeMenuAudio());
+    }
+
+    private IEnumerator ReinitializeGameAudio()
+    {
+        yield return new WaitForSeconds(0.1f); // Wait for the scene to load
+
+        if (AudioManager.instance != null)
+        {
+            AudioSource newGameMusicSource = GameObject.Find("Game Music")?.GetComponent<AudioSource>();
+            AudioSource newGameSfxSource = GameObject.Find("Game SFX")?.GetComponent<AudioSource>();
+
+            if (newGameMusicSource != null && newGameSfxSource != null)
+            {
+                AudioManager.instance.SetAudioSources(newGameMusicSource, newGameSfxSource);
+                AudioManager.instance.PlayGameMusic();
+            }
+            else
+            {
+                Debug.LogError("Game audio sources not found.");
+            }
+        }
     }
 
     private IEnumerator ReinitializeMenuAudio()
@@ -149,35 +197,6 @@ public class GameManager : MonoBehaviour
             {
                 Debug.LogError("Menu audio sources not found.");
             }
-        }
-        else
-        {
-            Debug.LogError("AudioManager instance is missing!");
-        }
-    }
-
-    public IEnumerator ReinitializeGameAudio()
-    {
-        yield return new WaitForSeconds(0.1f); // Wait for the scene to load
-
-        if (AudioManager.instance != null)
-        {
-            AudioSource gameMusicSource = GameObject.Find("Game Music")?.GetComponent<AudioSource>();
-            AudioSource gameSfxSource = GameObject.Find("Game SFX")?.GetComponent<AudioSource>();
-
-            if (gameMusicSource != null && gameSfxSource != null)
-            {
-                AudioManager.instance.SetAudioSources(gameMusicSource, gameSfxSource);
-                AudioManager.instance.PlayGameMusic();
-            }
-            else
-            {
-                Debug.LogError("Game audio sources not found.");
-            }
-        }
-        else
-        {
-            Debug.LogError("AudioManager instance is missing!");
         }
     }
 }
