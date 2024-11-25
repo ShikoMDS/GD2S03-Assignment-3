@@ -20,29 +20,45 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         ResetLives();
-        InitializeAudio();
+
+        // Ensure audio settings are applied
+        AudioManager audioManager = FindObjectOfType<AudioManager>();
+        if (audioManager != null)
+        {
+            ApplyAudioSettings(audioManager);
+            audioManager.PlayGameMusic();
+        }
+        else
+        {
+            Debug.LogError("AudioManager not found!");
+        }
+
+        int savedHighestStage = PlayerPrefs.GetInt("HighestStage", 0); // Default to 0 if no data exists
+        if (savedHighestStage == 0)
+        {
+            savedHighestStage = 1;
+            PlayerPrefs.SetInt("HighestStage", savedHighestStage);
+            PlayerPrefs.Save();
+            Debug.Log($"New highest stage achieved: {currentStage + 1}");
+        }
 
         if (winScreen != null) winScreen.SetActive(false);
         if (loseScreen != null) loseScreen.SetActive(false);
     }
 
-    private void InitializeAudio()
+    private void ApplyAudioSettings(AudioManager audioManager)
     {
-        if (AudioManager.instance != null)
-        {
-            // Assign audio sources for game music and SFX
-            AudioManager.instance.SetAudioSources(gameMusicSource, gameSfxSource);
+        // Load audio settings from PlayerPrefs
+        float musicVolume = PlayerPrefs.GetFloat("MusicVolume", 0.5f);
+        float sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 0.5f);
+        bool musicMuted = PlayerPrefs.GetInt("MusicMuted", 0) == 1;
+        bool sfxMuted = PlayerPrefs.GetInt("SFXMuted", 0) == 1;
 
-            // Play game music if not already playing
-            if (!AudioManager.instance.IsGameMusicPlaying())
-            {
-                AudioManager.instance.PlayGameMusic();
-            }
-        }
-        else
-        {
-            Debug.LogError("AudioManager instance is missing!");
-        }
+        // Apply settings to AudioManager
+        audioManager.musicSource.volume = musicVolume;
+        audioManager.musicSource.mute = musicMuted;
+        audioManager.sfxSource.volume = sfxVolume;
+        audioManager.sfxSource.mute = sfxMuted;
     }
 
     public void ResetLives()
@@ -93,6 +109,15 @@ public class GameManager : MonoBehaviour
     {
         currentStage++;
 
+        // Update the highest stage in PlayerPrefs if the current stage exceeds the saved highest stage
+        int savedHighestStage = PlayerPrefs.GetInt("HighestStage", 0); // Default to 0 if no data exists
+        if (currentStage + 1 > savedHighestStage)
+        {
+            PlayerPrefs.SetInt("HighestStage", currentStage + 1);
+            PlayerPrefs.Save();
+            Debug.Log($"New highest stage achieved: {currentStage + 1}");
+        }
+
         if (currentStage >= respawnPoints.Length)
         {
             Debug.Log("Game completed! No more stages.");
@@ -116,12 +141,6 @@ public class GameManager : MonoBehaviour
 
     private void GameOver(bool hasWon)
     {
-        // Stop all audio
-        if (AudioManager.instance != null)
-        {
-            AudioManager.instance.StopAllAudio();
-        }
-
         if (hasWon)
         {
             Debug.Log("Player has won!");
@@ -143,60 +162,11 @@ public class GameManager : MonoBehaviour
         // Reset lives and stages
         playerLives = maxLives;
         currentStage = 0;
-
-        // Reload game scene
-        SceneManager.LoadScene("Game");
-        StartCoroutine(ReinitializeGameAudio());
     }
 
     public void ReturnToMenu()
     {
         Time.timeScale = 1f; // Resume the game
         SceneManager.LoadScene("Menu");
-
-        // Reinitialize audio for menu
-        StartCoroutine(ReinitializeMenuAudio());
-    }
-
-    private IEnumerator ReinitializeGameAudio()
-    {
-        yield return new WaitForSeconds(0.1f); // Wait for the scene to load
-
-        if (AudioManager.instance != null)
-        {
-            AudioSource newGameMusicSource = GameObject.Find("Game Music")?.GetComponent<AudioSource>();
-            AudioSource newGameSfxSource = GameObject.Find("Game SFX")?.GetComponent<AudioSource>();
-
-            if (newGameMusicSource != null && newGameSfxSource != null)
-            {
-                AudioManager.instance.SetAudioSources(newGameMusicSource, newGameSfxSource);
-                AudioManager.instance.PlayGameMusic();
-            }
-            else
-            {
-                Debug.LogError("Game audio sources not found.");
-            }
-        }
-    }
-
-    private IEnumerator ReinitializeMenuAudio()
-    {
-        yield return new WaitForSeconds(0.1f); // Wait for the scene to load
-
-        if (AudioManager.instance != null)
-        {
-            AudioSource menuMusicSource = GameObject.Find("Music")?.GetComponent<AudioSource>();
-            AudioSource menuSfxSource = GameObject.Find("SFX")?.GetComponent<AudioSource>();
-
-            if (menuMusicSource != null && menuSfxSource != null)
-            {
-                AudioManager.instance.SetAudioSources(menuMusicSource, menuSfxSource);
-                AudioManager.instance.PlayMenuMusic();
-            }
-            else
-            {
-                Debug.LogError("Menu audio sources not found.");
-            }
-        }
     }
 }
